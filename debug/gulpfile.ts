@@ -1,5 +1,5 @@
 let gulp = require('gulp')
-import {targetCsv} from '../src/plugin'
+import {targetMime} from '../src/plugin'
 
 import * as loglevel from 'loglevel'
 const log = loglevel.getLogger('gulpfile')
@@ -24,7 +24,7 @@ function switchToBuffer(callback: any) {
   callback();
 }
 
-function runtargetCsv(callback: any) {
+function runtargetMime(callback: any) {
   log.info('gulp task starting for ' + PLUGIN_NAME)
 
   return gulp.src('../testdata/*.ndjson',{buffer:gulpBufferMode})
@@ -35,9 +35,9 @@ function runtargetCsv(callback: any) {
     .on('data', function (file:Vinyl) {
       log.info('Starting processing on ' + file.basename)
     })    
-    .pipe(targetCsv({header:true, quoted_string:true}))
+    .pipe(targetMime({}))
     .pipe(rename({
-      extname: ".csv",
+      extname: ".eml",
     }))      
     .pipe(gulp.dest('../testdata/processed'))
     .on('data', function (file:Vinyl) {
@@ -72,5 +72,5 @@ export function csvStringifyWithoutGulp(callback: any) {
   
 }
 
-exports.default = gulp.series(runtargetCsv)
-exports.runtargetCsvBuffer = gulp.series(switchToBuffer, runtargetCsv)
+exports.default = gulp.series(runtargetMime)
+exports.runtargetMimeBuffer = gulp.series(switchToBuffer, runtargetMime)
