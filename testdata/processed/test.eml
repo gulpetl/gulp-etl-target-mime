@@ -1,21 +1,21 @@
 Content-Type: multipart/alternative;
- boundary="--_NmP-d031f7f4ae4f3733-Part_1"
+ boundary="--_NmP-496d799709b93f95-Part_1"
 Subject: test 714
 Message-ID:
  <CAKVTp1bCWC-7pxoXW0HJb_6Ehbma7QYn_1Po5sGSO002nychNg@mail.gmail.com>
 Date: 2016-07-05T00:14:28.000Z
 MIME-Version: 1.0
 
-----_NmP-d031f7f4ae4f3733-Part_1
+----_NmP-496d799709b93f95-Part_1
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
 test
 
-----_NmP-d031f7f4ae4f3733-Part_1
+----_NmP-496d799709b93f95-Part_1
 Content-Type: text/html
 Content-Transfer-Encoding: 7bit
 
 <div dir="ltr">test</div>
 
-----_NmP-d031f7f4ae4f3733-Part_1--
+----_NmP-496d799709b93f95-Part_1--

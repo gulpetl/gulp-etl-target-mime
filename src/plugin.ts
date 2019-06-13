@@ -121,11 +121,13 @@ export function targetMime(configObj: any) {
          
     }
     else if (file.isStream()) {
-      file.contents = file.contents
+      var stream = mail.compile().createReadStream();
+      //file.contents = file.contents
         // split plugin will split the file into lines
         //.pipe(split())
         //.pipe(newTransformer(streamName))
         //.pipe(stringifier)
+        stream.pipe(file.contents)
         .on('end', function () {
 
           // DON'T CALL THIS HERE. It MAY work, if the job is small enough. But it needs to be called after the stream is SET UP, not when the streaming is DONE.
