@@ -81,13 +81,15 @@ export function targetMime(configObj: any) {
     else if (file.isBuffer()) {
       try {
         mail.compile().build(function(err:any,message:any){
-          try{
-          file.contents = Buffer.from(message.toString())
-          }
-          catch(err) {
-            console.log(err);
-          }
-        });
+            file.contents = Buffer.from(message.toString())
+            log.debug('calling callback')
+            cb(returnErr, file);
+        })
+      }
+      catch (err) {
+        returnErr = new PluginError(PLUGIN_NAME, err);
+        return cb(returnErr, file)        
+      }
         //const linesArray = (file.contents as Buffer).toString().split('\n')
         //let tempLine: any
         //let resultArray = [];
@@ -113,15 +115,10 @@ export function targetMime(configObj: any) {
       //     else file.contents = Buffer.from(data)
       
            // we are done with file processing. Pass the processed file along
-           log.debug('calling callback')    
-           cb(returnErr, file);    
+            
+          
       //   })
-       }
-      catch (err) {
-        returnErr = new PluginError(PLUGIN_NAME, err);
-        return cb(returnErr, file)        
-      }
-
+         
     }
     else if (file.isStream()) {
       file.contents = file.contents

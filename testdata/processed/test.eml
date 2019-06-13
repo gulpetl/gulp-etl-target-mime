@@ -1,1 +1,21 @@
-{"type":"RECORD","stream":"TapMimeStreamMode","record":{"attachments":[],"headers":{},"headerLines":[{"key":"return-path","line":"Return-Path: <sender@sender.com>"},{"key":"received","line":"Received: from p3plsmtpout003.prod.phx3.secureserver.net (p3plsmtpout003.prod.phx3.secureserver.net [208.109.80.53])\r\n by inbound-smtp.us-west-2.amazonaws.com with SMTP id u1km0cv7ve03cto3klq214899elc7t2lgjfkosg1\r\n for production@test.com;\r\n Tue, 05 Jul 2016 00:17:31 +0000 (UTC)"},{"key":"x-ses-spam-verdict","line":"X-SES-Spam-Verdict: PASS"},{"key":"x-ses-virus-verdict","line":"X-SES-Virus-Verdict: PASS"},{"key":"received-spf","line":"Received-SPF: none (spfCheck: 208.109.80.53 is neither permitted nor denied by domain of sender.com) client-ip=208.109.80.53; envelope-from=sender@sender.com; helo=p3plsmtpout003.prod.phx3.secureserver.net;"},{"key":"authentication-results","line":"Authentication-Results: amazonses.com;\r\n spf=none (spfCheck: 208.109.80.53 is neither permitted nor denied by domain of sender.com) client-ip=208.109.80.53; envelope-from=sender@sender.com; helo=p3plsmtpout003.prod.phx3.secureserver.net;"},{"key":"received","line":"Received: from baleexchange.com ([50.62.136.132])\r\n\tby : HOSTING RELAY : with SMTP\r\n\tid KE0Ubcty0Jp34KE0UbZNFb; Mon, 04 Jul 2016 17:14:30 -0700"},{"key":"x-originating-ip","line":"x-originating-ip: 50.62.136.132"},{"key":"received","line":"Received: from mail-io0-f182.google.com (mail-io0-f182.google.com [209.85.223.182])\r\n\tby baleexchange.com\r\n\t; Mon, 4 Jul 2016 19:14:22 -0500"},{"key":"received","line":"Received: by mail-io0-f182.google.com with SMTP id f30so161742132ioj.2\r\n        for <production@test.com>; Mon, 04 Jul 2016 17:14:29 -0700 (PDT)"},{"key":"x-gm-message-state","line":"X-Gm-Message-State: ALyK8tKQRzCRj68Fyf0u6nzC2GHLcu+6CeOyDkrwtC/IdURH/d0LSjWtIEocPKvIkeqEmHDyDXHBp5xyuNsYdg=="},{"key":"x-received","line":"X-Received: by 10.107.53.233 with SMTP id k102mr10784599ioo.134.1467677669060;\r\n Mon, 04 Jul 2016 17:14:29 -0700 (PDT)"},{"key":"mime-version","line":"MIME-Version: 1.0"},{"key":"received","line":"Received: by 10.64.82.135 with HTTP; Mon, 4 Jul 2016 17:14:28 -0700 (PDT)"},{"key":"from","line":"From: Test Account <sender@sender.com>"},{"key":"date","line":"Date: Mon, 4 Jul 2016 19:14:28 -0500"},{"key":"x-gmail-original-message-id","line":"X-Gmail-Original-Message-ID: <CAKVTp1bCWC-7pxoXW0HJb_6Ehbma7QYn_1Po5sGSO002nychNg@mail.gmail.com>"},{"key":"message-id","line":"Message-ID: <CAKVTp1bCWC-7pxoXW0HJb_6Ehbma7QYn_1Po5sGSO002nychNg@mail.gmail.com>"},{"key":"subject","line":"Subject: test 714"},{"key":"to","line":"To: production@test.com"},{"key":"content-type","line":"Content-Type: multipart/mixed; boundary=001a11449ce01c90d30536d85634"},{"key":"x-cmae-envelope","line":"X-CMAE-Envelope: MS4wfAA1dNn25/mv2lVojBgHrQ7eDYKFKupUpN7Um5PTGX+9Y1Ldh//bNGbgrdhscVQOErCFXkLtIsupqJPPN0EXUvC6JayEUq+DNnpXB1qAbnTqGnAbpGpi\r\n LaVx3LLxUhUHz1Ox1CaG24ArJlDAIq/XR6eOJsTi9Ct1bI0zriF+JOQ0tU1UNEtQYeTFgb5zWKMpcQ=="}],"html":"<div dir=\"ltr\">test</div>\n","text":"test\n","textAsHtml":"<p>test</p>","subject":"test 714","date":"2016-07-05T00:14:28.000Z","to":{"value":[{"address":"production@test.com","name":""}],"html":"<span class=\"mp_address_group\"><a href=\"mailto:production@test.com\" class=\"mp_address_email\">production@test.com</a></span>","text":"production@test.com"},"from":{"value":[{"address":"sender@sender.com","name":"Test Account"}],"html":"<span class=\"mp_address_group\"><span class=\"mp_address_name\">Test Account</span> &lt;<a href=\"mailto:sender@sender.com\" class=\"mp_address_email\">sender@sender.com</a>&gt;</span>","text":"Test Account <sender@sender.com>"},"messageId":"<CAKVTp1bCWC-7pxoXW0HJb_6Ehbma7QYn_1Po5sGSO002nychNg@mail.gmail.com>"}}
+Content-Type: multipart/alternative;
+ boundary="--_NmP-d031f7f4ae4f3733-Part_1"
+Subject: test 714
+Message-ID:
+ <CAKVTp1bCWC-7pxoXW0HJb_6Ehbma7QYn_1Po5sGSO002nychNg@mail.gmail.com>
+Date: 2016-07-05T00:14:28.000Z
+MIME-Version: 1.0
+
+----_NmP-d031f7f4ae4f3733-Part_1
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+test
+
+----_NmP-d031f7f4ae4f3733-Part_1
+Content-Type: text/html
+Content-Transfer-Encoding: 7bit
+
+<div dir="ltr">test</div>
+
+----_NmP-d031f7f4ae4f3733-Part_1--
