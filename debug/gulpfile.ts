@@ -27,7 +27,7 @@ function switchToBuffer(callback: any) {
 function runtargetMime(callback: any) {
   log.info('gulp task starting for ' + PLUGIN_NAME)
 
-  return gulp.src('../testdata/*.ndjson',{buffer:gulpBufferMode})
+  return gulp.src('../testdata/*C.ndjson',{buffer:gulpBufferMode})
     .pipe(errorHandler(function(err:any) {
       log.error('Error: ' + err)
       callback(err)

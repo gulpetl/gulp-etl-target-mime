@@ -26,15 +26,15 @@ export function targetMime(configObj: any) {
   // creating a stream through which each file will pass - a new instance will be created and invoked for each file 
   // see https://stackoverflow.com/a/52432089/5578474 for a note on the "this" param
   const strm = through2.obj(function (this: any, file: Vinyl, encoding: string, cb: Function) {
-    const self = this
+    //const self = this
     let returnErr: any = null
-    let stringifier
-    try {
-      stringifier = stringify(configObj)
-    }
-    catch (err) {
-      returnErr = new PluginError(PLUGIN_NAME, err);
-    }
+    // let stringifier
+    // try {
+    //   stringifier = stringify(configObj)
+    // }
+    // catch (err) {
+    //   returnErr = new PluginError(PLUGIN_NAME, err);
+    // }
 
     // preprocess line object
     // const handleLine = (lineObj: any, _streamName : string): object | null => {
@@ -69,16 +69,22 @@ export function targetMime(configObj: any) {
     // }
 
     // set the stream name to the file name (without extension)
-    let streamName : string = file.stem
-
-    let MailObject = (JSON.parse((file.contents as Buffer).toString())).record
-    var mail = new MailComposer(MailObject);
+    //let streamName : string = file.stem
+   
 
     if (file.isNull() || returnErr) {
       // return empty file
       return cb(returnErr, file)
     }
     else if (file.isBuffer()) {
+      try{
+        let MailObject = (JSON.parse((file.contents as Buffer).toString())).record
+        var mail = new MailComposer(MailObject);
+      }
+      catch(err) {
+        console.log(err)
+      }
+      
       try {
         mail.compile().build(function(err:any,message:any){
             file.contents = Buffer.from(message.toString())
@@ -121,6 +127,13 @@ export function targetMime(configObj: any) {
          
     }
     else if (file.isStream()) {
+      try{
+        let MailObject = (JSON.parse(file.content)).record
+        var mail = new MailComposer(MailObject);
+      }
+      catch(err) {
+        console.log(err)
+      }  
       var stream = mail.compile().createReadStream();
       //file.contents = file.contents
         // split plugin will split the file into lines
@@ -142,7 +155,7 @@ export function targetMime(configObj: any) {
         // })
         .on('error', function (err: any) {
           log.error(err)
-          self.emit('error', new PluginError(PLUGIN_NAME, err));
+         // self.emit('error', new PluginError(PLUGIN_NAME, err));
         })
 
       // after our stream is set up (not necesarily finished) we call the callback
