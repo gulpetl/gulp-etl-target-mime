@@ -70,15 +70,42 @@ export function targetMime(configObj: any) {
 
     // set the stream name to the file name (without extension)
     //let streamName : string = file.stem
-   
+   let MailObject = (JSON.parse((file.contents as Buffer).toString())).record
+   function convertor() {
+    //for headers
+      MailObject.headers = MailObject.headerLines
+      delete MailObject.headerLines
+      for (var i = 0; i < MailObject.headers.length; i++) {
+        //MailObject.headers[i].key = ""
+        var index = MailObject.headers[i].line.indexOf(":");
+        var NewKeyValue = MailObject.headers[i].line.slice(0,index)
+        MailObject.headers[i].key = NewKeyValue
+        MailObject.headers[i].line = MailObject.headers[i].line.slice(index+2,)
+        MailObject.headers[i].value = MailObject.headers[i].line
+        delete MailObject.headers[i].line
+      }
+      console.log( Object.keys(MailObject))
+      //for attachments
+      if("attachments" in Object.keys(MailObject)) {
+        MailObject.attachments.content = new Buffer(MailObject.attachments.content.data, 'utf-8')
+      }
+
+    //for from 
+      MailObject.from = MailObject.from.value
+      
+    //for to
+      MailObject.to = MailObject.to.value
+    }
+
+    convertor();
 
     if (file.isNull() || returnErr) {
       // return empty file
       return cb(returnErr, file)
     }
+
     else if (file.isBuffer()) {
-      try{
-        let MailObject = (JSON.parse((file.contents as Buffer).toString())).record
+      try{   
         var mail = new MailComposer(MailObject);
       }
       catch(err) {
@@ -87,7 +114,12 @@ export function targetMime(configObj: any) {
       
       try {
         mail.compile().build(function(err:any,message:any){
+          try{
             file.contents = Buffer.from(message.toString())
+          }
+          catch(err) {
+            console.log(err)
+          }
             log.debug('calling callback')
             cb(returnErr, file);
         })
