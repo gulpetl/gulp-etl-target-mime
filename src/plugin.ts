@@ -212,8 +212,7 @@ export function targetMime(configObj: any) {
           //.pipe(split())
           //.pipe(newTransformer(streamName))
           //.pipe(stringifier)
-        file.contents = file.contents
-        .pipe(stream)
+        file.contents = stream
         .on('end', function () {
 
           //   // DON'T CALL THIS HERE. It MAY work, if the job is small enough. But it needs to be called after the stream is SET UP, not when the streaming is DONE.
