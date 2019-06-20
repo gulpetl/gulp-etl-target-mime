@@ -1,1 +1,12 @@
-{"type":"RECORD","stream":"TapMimeStreamMode","record":{"attachments":[{"type":"attachment","content":{"type":"Buffer","data":[]},"contentType":"text/plain","partId":"1","release":null,"contentDisposition":"attachment","filename":"This is a test.txt","headers":{},"checksum":"d41d8cd98f00b204e9800998ecf8427e","size":0}],"headers":{},"headerLines":[{"key":"mime-version","line":"Mime-Version: 1.0 (Apple Message framework v730)"},{"key":"content-type","line":"Content-Type: multipart/mixed; boundary=Apple-Mail-13-196941151"},{"key":"message-id","line":"Message-Id: <9169D984-4E0B-45EF-82D4-8F5E53AD7012@example.com>"},{"key":"from","line":"From: foo@example.com"},{"key":"subject","line":"Subject: testing"},{"key":"date","line":"Date: Mon, 6 Jun 2005 22:21:22 +0200"},{"key":"to","line":"To: blah@example.com"}],"subject":"testing","date":"2005-06-06T20:21:22.000Z","to":{"value":[{"address":"blah@example.com","name":""}],"html":"<span class=\"mp_address_group\"><a href=\"mailto:blah@example.com\" class=\"mp_address_email\">blah@example.com</a></span>","text":"blah@example.com"},"from":{"value":[{"address":"foo@example.com","name":""}],"html":"<span class=\"mp_address_group\"><a href=\"mailto:foo@example.com\" class=\"mp_address_email\">foo@example.com</a></span>","text":"foo@example.com"},"messageId":"<9169D984-4E0B-45EF-82D4-8F5E53AD7012@example.com>","html":false}}
+Content-Type: text/plain; name="This is a test.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="This is a test.txt"
+MIME-Version: 1.0 (Apple Message framework v730)
+Content-Type: multipart/mixed; boundary=Apple-Mail-13-196941151; name="This
+ is a test.txt"
+Message-ID: <9169D984-4E0B-45EF-82D4-8F5E53AD7012@example.com>
+From: foo@example.com
+Subject: testing
+Date: 2005-06-06T20:21:22.000Z
+To: blah@example.com
+

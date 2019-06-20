@@ -10,6 +10,7 @@ log.setLevel((process.env.DEBUG_LEVEL || 'warn') as log.LogLevelDesc)
 const stringify = require('csv-stringify')
 const split = require('split2')
 const MailComposer = require('nodemailer/lib/mail-composer');
+const getStream = require('get-stream')
 
 /** wrap incoming recordObject in a Singer RECORD Message object*/
 function createRecord(recordObject:Object, streamName: string) : any {
@@ -70,8 +71,19 @@ export function targetMime(configObj: any) {
 
     // set the stream name to the file name (without extension)
     //let streamName : string = file.stem
-   let MailObject = (JSON.parse((file.contents as Buffer).toString())).record
-   function convertor() {
+   
+    
+
+    if (file.isNull() || returnErr) {
+      // return empty file
+      return cb(returnErr, file)
+    }
+
+    else if (file.isBuffer()) {
+      try{   
+
+        let MailObject = (JSON.parse((file.contents as Buffer).toString())).record
+   
     //for headers
       MailObject.headers = MailObject.headerLines
       delete MailObject.headerLines
@@ -84,10 +96,13 @@ export function targetMime(configObj: any) {
         MailObject.headers[i].value = MailObject.headers[i].line
         delete MailObject.headers[i].line
       }
-      console.log( Object.keys(MailObject))
+    
       //for attachments
-      if("attachments" in Object.keys(MailObject)) {
-        MailObject.attachments.content = new Buffer(MailObject.attachments.content.data, 'utf-8')
+      let attachmentIdx = Object.keys(MailObject).indexOf("attachments")
+      if(attachmentIdx > -1 && MailObject.attachments.length > 0) {
+        for(var i = 0; i < MailObject.attachments.length; i++) {
+          MailObject.attachments[i].content = new Buffer(MailObject.attachments[i].content.data, 'utf-8')
+        }
       }
 
     //for from 
@@ -95,17 +110,8 @@ export function targetMime(configObj: any) {
       
     //for to
       MailObject.to = MailObject.to.value
-    }
 
-    convertor();
 
-    if (file.isNull() || returnErr) {
-      // return empty file
-      return cb(returnErr, file)
-    }
-
-    else if (file.isBuffer()) {
-      try{   
         var mail = new MailComposer(MailObject);
       }
       catch(err) {
@@ -159,40 +165,75 @@ export function targetMime(configObj: any) {
          
     }
     else if (file.isStream()) {
-      try{
-        let MailObject = (JSON.parse(file.content)).record
-        var mail = new MailComposer(MailObject);
-      }
-      catch(err) {
-        console.log(err)
-      }  
-      var stream = mail.compile().createReadStream();
-      //file.contents = file.contents
-        // split plugin will split the file into lines
-        //.pipe(split())
-        //.pipe(newTransformer(streamName))
-        //.pipe(stringifier)
-        stream.pipe(file.contents)
+      (async () => {
+       
+
+        try{
+          var contents = await getStream.buffer(file.contents)
+          let MailObject = (JSON.parse(contents.toString())).record
+
+          //for headers
+          MailObject.headers = MailObject.headerLines
+          delete MailObject.headerLines
+          for (var i = 0; i < MailObject.headers.length; i++) {
+            //MailObject.headers[i].key = ""
+            var index = MailObject.headers[i].line.indexOf(":");
+            var NewKeyValue = MailObject.headers[i].line.slice(0,index)
+            MailObject.headers[i].key = NewKeyValue
+            MailObject.headers[i].line = MailObject.headers[i].line.slice(index+2,)
+            MailObject.headers[i].value = MailObject.headers[i].line
+            delete MailObject.headers[i].line
+          }
+        
+          //for attachments
+          let attachmentIdx = Object.keys(MailObject).indexOf("attachments")
+          if(attachmentIdx > -1 && MailObject.attachments.length > 0) {
+            for(var i = 0; i < MailObject.attachments.length; i++) {
+              MailObject.attachments[i].content = new Buffer(MailObject.attachments[i].content.data, 'utf-8')
+            }
+          }
+
+          //for from 
+          MailObject.from = MailObject.from.value
+          
+          //for to
+          MailObject.to = MailObject.to.value
+
+          var mail = new MailComposer(MailObject)
+          var stream = mail.compile().createReadStream()
+        }
+        catch(err) {
+          console.log(err)
+        }  
+        
+        //file.contents = string_to_strm(stream)
+        //file.contents = file.contents
+          // split plugin will split the file into lines
+          //.pipe(split())
+          //.pipe(newTransformer(streamName))
+          //.pipe(stringifier)
+        file.contents = file.contents
+        .pipe(stream)
         .on('end', function () {
 
-          // DON'T CALL THIS HERE. It MAY work, if the job is small enough. But it needs to be called after the stream is SET UP, not when the streaming is DONE.
-          // Calling the callback here instead of below may result in data hanging in the stream--not sure of the technical term, but dest() creates no file, or the file is blank
-          // cb(returnErr, file);
-          // log.debug('calling callback')    
-
+          //   // DON'T CALL THIS HERE. It MAY work, if the job is small enough. But it needs to be called after the stream is SET UP, not when the streaming is DONE.
+          //   // Calling the callback here instead of below may result in data hanging in the stream--not sure of the technical term, but dest() creates no file, or the file is blank
+          //   // cb(returnErr, file);
+          //   // log.debug('calling callback') 
+          
           log.debug('mime parser is done')
         })
-        // .on('data', function (data:any, err: any) {
-        //   log.debug(data)
-        // })
+          // .on('data', function (data:any, err: any) {
+          //   log.debug(data)
+          // })
         .on('error', function (err: any) {
           log.error(err)
-         // self.emit('error', new PluginError(PLUGIN_NAME, err));
+          // self.emit('error', new PluginError(PLUGIN_NAME, err));
         })
-
-      // after our stream is set up (not necesarily finished) we call the callback
-      log.debug('calling callback')    
-      cb(returnErr, file);
+        // after our stream is set up (not necesarily finished) we call the callback
+        log.debug('calling callback')    
+        cb(returnErr, file);   
+      })();
     }
 
   })
