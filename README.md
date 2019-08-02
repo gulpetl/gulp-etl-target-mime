@@ -1,42 +1,35 @@
 # gulp-etl-target-mime #
 
-*(this plugin is being developed from **gulp-etl-target-csv**. The original readme from [gulp-etl-target-csv](https://github.com/gulpetl/gulp-etl-target-csv) is below)*
-
-This plugin creates CSV files from **gulp-etl** **Message Stream** files; originally adapted from the [gulp-etl-handlelines](https://github.com/gulpetl/gulp-etl-handlelines) model plugin. It is a **gulp-etl** wrapper for [csv-stringify](https://csv.js.org/stringify/).
-
-This is a **[gulp-etl](https://gulpetl.com/)** plugin, and as such it is a [gulp](https://gulpjs.com/) plugin. **gulp-etl** plugins work with [ndjson](http://ndjson.org/) data streams/files which we call **Message Streams** and which are compliant with the [Singer specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#output). Message Streams look like this:
-
-```
-{"type": "SCHEMA", "stream": "users", "key_properties": ["id"], "schema": {"required": ["id"], "type": "object", "properties": {"id": {"type": "integer"}}}}
-{"type": "RECORD", "stream": "users", "record": {"id": 1, "name": "Chris"}}
-{"type": "RECORD", "stream": "users", "record": {"id": 2, "name": "Mike"}}
-{"type": "SCHEMA", "stream": "locations", "key_properties": ["id"], "schema": {"required": ["id"], "type": "object", "properties": {"id": {"type": "integer"}}}}
-{"type": "RECORD", "stream": "locations", "record": {"id": 1, "name": "Philadelphia"}}
-{"type": "STATE", "value": {"users": 2, "locations": 1}}
-```
+This is a gulp plugin. This plugin converts a **JSON file containing a mail object** to an **actual raw email (MIME/.eml file)**. It is a **gulp** wrapper for [mailcomposer](https://nodemailer.com/extras/mailcomposer/).
 
 ### Usage
-**gulp-etl** plugins accept a configObj as the first parameter; the configObj
-will contain any info the plugin needs. For this plugin the configObj is the "Options" object for [csv-stringify](https://csv.js.org/stringify/), described [here](https://csv.js.org/stringify/options/).
+The configObj will contain any info the plugin needs. For this plugin the configObj can have one option whihc can be an array of objects:
+    
+* **Attachments: Array of Objects** - If you want to add extra attachments to the mail you can drop them in the directory and create a gulp task to collect all these attachments make an array of objects out of them as depicted in the example gulpfile, and then create another gulp task to pass this attachment array in the plugin to add them as attachments in teh outgoing email. By default this would be null, so no extra attachments would be passed in.
 
 ##### Sample gulpfile.js
 ```
-var gulp = require('gulp')
-var rename = require('gulp-rename')
-var targetCsv = require('gulp-etl-target-csv').targetCsv
+let Attachments:any = []
 
-exports.default = function() {
-    return gulp.src('data/*.ndjson')
-    .on('data', function (file) {
-        console.log('Starting processing on ' + file.basename)
-    })  
-    .pipe(targetCsv({header:true}))
-    .pipe(rename({ extname: ".csv" })) // rename to *.csv
-    .on('data', function (file) {
-        console.log('Done processing on ' + file.basename)
-    })  
-    .pipe(gulp.dest('data/'));
+function CollectAttachments(callback: any) {
+  return gulp.src(['data/*.*','!data/mail.JSON'])
+    .on('data', function (file:Vinyl) {
+      Attachments.push(
+        {
+          filename: file.basename,
+          content: file.contents
+        })
+    })    
 }
+
+function runtargetMime(callback: any) {
+  return gulp.src('data/mail.JSON')  
+    .pipe(targetMime({Attachments}))
+    .pipe(gulp.dest('output/'))
+}
+
+
+exports.default = gulp.series(CollectAttachments, runtargetMime)
 ```
 ### Quick Start for Coding on This Plugin
 * Dependencies: 
