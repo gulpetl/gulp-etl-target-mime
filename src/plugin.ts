@@ -28,7 +28,6 @@ export function targetMime(configObj: {Attachments ?: Array<Object>}) {
   // see https://stackoverflow.com/a/52432089/5578474 for a note on the "this" param
   const strm = through2.obj(function (this: any, file: Vinyl, encoding: string, cb: Function) {
     let returnErr: any = null
-    const self = this
 
     if (file.isNull() || returnErr) {
       // return empty file
