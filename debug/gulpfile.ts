@@ -24,10 +24,28 @@ function switchToBuffer(callback: any) {
   callback();
 }
 
+let Attachments:any = []
+
+function CollectAttachments(callback: any) {
+  return gulp.src(['../testdata/*.*','!../testdata/mail.JSON'],{buffer:gulpBufferMode})
+    .pipe(errorHandler(function(err:any) {
+      log.error('Error: ' + err)
+      callback(err)
+    }))
+    .on('data', function (file:Vinyl) {
+      Attachments.push(
+        {
+          filename: file.basename,
+          content: file.contents
+        })
+    })    
+}
+
+
 function runtargetMime(callback: any) {
   log.info('gulp task starting for ' + PLUGIN_NAME)
 
-  return gulp.src('../testdata/*.ndjson',{buffer:gulpBufferMode})
+  return gulp.src('../testdata/mail.JSON',{buffer:gulpBufferMode})
     .pipe(errorHandler(function(err:any) {
       log.error('Error: ' + err)
       callback(err)
@@ -35,10 +53,7 @@ function runtargetMime(callback: any) {
     .on('data', function (file:Vinyl) {
       log.info('Starting processing on ' + file.basename)
     })    
-    .pipe(targetMime({}))
-    .pipe(rename({
-      extname: ".eml",
-    }))      
+    .pipe(targetMime({Attachments}))
     .pipe(gulp.dest('../testdata/processed'))
     .on('data', function (file:Vinyl) {
       log.info('Finished processing on ' + file.basename)
@@ -47,30 +62,30 @@ function runtargetMime(callback: any) {
       log.info('gulp task complete')
       callback()
     })
-
 }
 
-export function csvStringifyWithoutGulp(callback: any) {
+//NOT USING
+// export function csvStringifyWithoutGulp(callback: any) {
 
-  const stringify = require('csv-stringify')
-  const transform = require('stream-transform')
-  const split = require('split2')
+//   const stringify = require('csv-stringify')
+//   const transform = require('stream-transform')
+//   const split = require('split2')
 
-  var stringifier = stringify({});
+//   var stringifier = stringify({});
   
-  require('fs').createReadStream('../testdata/cars.ndjson', {encoding:"utf8"})
-  .pipe(split()) // split the stream into individual lines
-  .pipe(transform(function(dataLine:string) {
-    // parse each text line into an object and return the record property
-    const dataObj = JSON.parse(dataLine)
-    return dataObj.record
-  }))
-  .pipe(stringifier)
-  .on("data",(data:any)=>{
-    console.log((data as Buffer).toString())
-  });
+//   require('fs').createReadStream('../testdata/cars.ndjson', {encoding:"utf8"})
+//   .pipe(split()) // split the stream into individual lines
+//   .pipe(transform(function(dataLine:string) {
+//     // parse each text line into an object and return the record property
+//     const dataObj = JSON.parse(dataLine)
+//     return dataObj.record
+//   }))
+//   .pipe(stringifier)
+//   .on("data",(data:any)=>{
+//     console.log((data as Buffer).toString())
+//   });
   
-}
+// }
 
-exports.default = gulp.series(runtargetMime)
-exports.runtargetMimeBuffer = gulp.series(switchToBuffer, runtargetMime)
+exports.default = gulp.series(CollectAttachments, runtargetMime)
+exports.runtargetMimeBuffer = gulp.series(switchToBuffer, CollectAttachments, runtargetMime)
