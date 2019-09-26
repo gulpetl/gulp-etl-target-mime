@@ -1,8 +1,8 @@
 {
-  "name": "gulp-etl-target-mime",
-  "version": "1.0.3",
-  "repository": "https://github.com/gulpetl/gulp-etl-target-csv",
-  "description": "Convert CSV files to JSON compatible with gulp-etl",
+  "name": "gulp-target-mime",
+  "version": "0.0.4",
+  "repository": "https://github.com/gulpetl/gulp-target-mime",
+  "description": "Take files froma gulp pipeline and convert to a MIME file for emailing",
   "main": "dist/js/plugin.js",
   "typings": "dist/types/plugin.d.ts",
   "files": [

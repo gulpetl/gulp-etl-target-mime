@@ -1,4 +1,4 @@
-# gulp-etl-target-mime #
+# gulp-target-mime #
 
 This is a gulp plugin. This plugin converts a **JSON file containing a mail object** to an **actual raw email (MIME/.eml file)**. It is a **gulp** wrapper for [mailcomposer](https://nodemailer.com/extras/mailcomposer/).
 
