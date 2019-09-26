@@ -1,1 +1,3 @@
-export declare function targetCsv(configObj: any): any;
+export declare function targetMime(configObj: {
+    Attachments?: Array<Object>;
+}): any;

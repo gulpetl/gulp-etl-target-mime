@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const through2 = require('through2');
 const PluginError = require("plugin-error");
@@ -7,8 +15,9 @@ const PLUGIN_NAME = module.exports.name;
 const loglevel = require("loglevel");
 const log = loglevel.getLogger(PLUGIN_NAME); // get a logger instance based on the project name
 log.setLevel((process.env.DEBUG_LEVEL || 'warn'));
-const stringify = require('csv-stringify');
-const split = require('split2');
+const MailComposer = require('nodemailer/lib/mail-composer');
+const getStream = require('get-stream');
+const replaceExt = require("replace-ext");
 /** wrap incoming recordObject in a Singer RECORD Message object*/
 function createRecord(recordObject, streamName) {
     return { type: "RECORD", stream: streamName, record: recordObject };
@@ -16,85 +25,36 @@ function createRecord(recordObject, streamName) {
 /* This is a gulp-etl plugin. It is compliant with best practices for Gulp plugins (see
 https://github.com/gulpjs/gulp/blob/master/docs/writing-a-plugin/guidelines.md#what-does-a-good-plugin-look-like ),
 and like all gulp-etl plugins it accepts a configObj as its first parameter */
-function targetCsv(configObj) {
+function targetMime(configObj) {
     if (!configObj)
         configObj = {};
-    //  if (!configObj.columns) configObj.columns = true // we don't allow false for columns; it results in arrays instead of objects for each record
+    let Attachments = (configObj.Attachments) ? configObj.Attachments : null;
+    let MailObject;
     // creating a stream through which each file will pass - a new instance will be created and invoked for each file 
     // see https://stackoverflow.com/a/52432089/5578474 for a note on the "this" param
     const strm = through2.obj(function (file, encoding, cb) {
-        const self = this;
         let returnErr = null;
-        let stringifier;
-        try {
-            stringifier = stringify(configObj);
-        }
-        catch (err) {
-            returnErr = new PluginError(PLUGIN_NAME, err);
-        }
-        // preprocess line object
-        const handleLine = (lineObj, _streamName) => {
-            lineObj = lineObj.record;
-            return lineObj;
-        };
-        function newTransformer(streamName) {
-            let transformer = through2.obj(); // new transform stream, in object mode
-            // transformer is designed to follow split2, which emits one line at a time, so dataObj is an Object. We will finish by converting dataObj to a text line
-            transformer._transform = function (dataLine, encoding, callback) {
-                let returnErr = null;
-                try {
-                    let dataObj;
-                    if (dataLine.trim() != "")
-                        dataObj = JSON.parse(dataLine);
-                    let handledObj = handleLine(dataObj, streamName);
-                    if (handledObj) {
-                        let handledLine = JSON.stringify(handledObj);
-                        log.debug(handledLine);
-                        this.push(handledObj);
-                    }
-                }
-                catch (err) {
-                    returnErr = new PluginError(PLUGIN_NAME, err);
-                }
-                callback(returnErr);
-            };
-            return transformer;
-        }
-        // set the stream name to the file name (without extension)
-        let streamName = file.stem;
         if (file.isNull() || returnErr) {
             // return empty file
-            return cb(returnErr, file);
+            return cb(returnErr);
         }
         else if (file.isBuffer()) {
+            MailObject = (JSON.parse(file.contents.toString())).record;
+            if (Attachments) {
+                for (var i = 0; i < Attachments.length; i++) {
+                    MailObject.attachments.push(Attachments[i]);
+                }
+            }
+            var mail = new MailComposer(MailObject);
             try {
-                const linesArray = file.contents.toString().split('\n');
-                let tempLine;
-                let resultArray = [];
-                // we'll call handleLine on each line
-                for (let dataIdx in linesArray) {
+                mail.compile().build(function (err, message) {
                     try {
-                        if (linesArray[dataIdx].trim() == "")
-                            continue;
-                        let lineObj = JSON.parse(linesArray[dataIdx]);
-                        tempLine = handleLine(lineObj, streamName);
-                        if (tempLine) {
-                            let tempStr = JSON.stringify(tempLine);
-                            log.debug(tempStr);
-                            resultArray.push(tempLine);
-                        }
+                        file.contents = Buffer.from(message.toString());
+                        file.path = replaceExt(file.path, '.eml');
                     }
                     catch (err) {
-                        returnErr = new PluginError(PLUGIN_NAME, err);
+                        console.log(err);
                     }
-                }
-                stringify(resultArray, configObj, function (err, data) {
-                    // this callback function runs when the stringify finishes its work, returning an array of CSV lines
-                    if (err)
-                        returnErr = new PluginError(PLUGIN_NAME, err);
-                    else
-                        file.contents = Buffer.from(data);
-                    // we are done with file processing. Pass the processed file along
                     log.debug('calling callback');
                     cb(returnErr, file);
                 });
@@ -105,31 +65,32 @@ function targetCsv(configObj) {
             }
         }
         else if (file.isStream()) {
-            file.contents = file.contents
-                // split plugin will split the file into lines
-                .pipe(split())
-                .pipe(newTransformer(streamName))
-                .pipe(stringifier)
-                .on('end', function () {
-                // DON'T CALL THIS HERE. It MAY work, if the job is small enough. But it needs to be called after the stream is SET UP, not when the streaming is DONE.
-                // Calling the callback here instead of below may result in data hanging in the stream--not sure of the technical term, but dest() creates no file, or the file is blank
-                // cb(returnErr, file);
-                // log.debug('calling callback')    
-                log.debug('csv parser is done');
-            })
-                // .on('data', function (data:any, err: any) {
-                //   log.debug(data)
-                // })
-                .on('error', function (err) {
-                log.error(err);
-                self.emit('error', new PluginError(PLUGIN_NAME, err));
-            });
-            // after our stream is set up (not necesarily finished) we call the callback
-            log.debug('calling callback');
-            cb(returnErr, file);
+            (() => __awaiter(this, void 0, void 0, function* () {
+                var contents = yield getStream.buffer(file.contents);
+                let MailObject = (JSON.parse(contents.toString())).record;
+                if (Attachments) {
+                    for (var i = 0; i < Attachments.length; i++) {
+                        MailObject.attachments.push(Attachments[i]);
+                    }
+                }
+                var mail = new MailComposer(MailObject);
+                var stream = mail.compile().createReadStream();
+                file.contents = stream
+                    .on('end', function () {
+                    // DON'T CALL THIS HERE. It MAY work, if the job is small enough. But it needs to be called after the stream is SET UP, not when the streaming is DONE.         
+                    log.debug('mime parser is done');
+                })
+                    .on('error', function (err) {
+                    log.error(err);
+                });
+                file.path = replaceExt(file.path, '.eml');
+                // after our stream is set up (not necesarily finished) we call the callback
+                log.debug('calling callback');
+                cb(returnErr, file);
+            }))();
         }
     });
     return strm;
 }
-exports.targetCsv = targetCsv;
+exports.targetMime = targetMime;
 //# sourceMappingURL=plugin.js.map
