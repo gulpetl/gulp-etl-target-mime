@@ -3,7 +3,7 @@ import {targetMime} from '../src/plugin'
 
 import * as loglevel from 'loglevel'
 const log = loglevel.getLogger('gulpfile')
-log.setLevel((process.env.DEBUG_LEVEL || 'warn') as log.LogLevelDesc)
+log.setLevel((process.env.DEBUG_LEVEL || 'info') as loglevel.LogLevelDesc)
 // if needed, you can control the plugin's logging level separately from 'gulpfile' logging above
 // const pluginLog = loglevel.getLogger(PLUGIN_NAME)
 // pluginLog.setLevel('debug')
@@ -23,7 +23,7 @@ function switchToBuffer(callback: any) {
   callback();
 }
 
-let Attachments:any = []
+let attachments:any = []
 
 function CollectAttachments(callback: any) {
   return gulp.src(['../testdata/*.*','!../testdata/mail.JSON'],{buffer:gulpBufferMode})
@@ -32,7 +32,7 @@ function CollectAttachments(callback: any) {
       callback(err)
     }))
     .on('data', function (file:Vinyl) {
-      Attachments.push(
+      attachments.push(
         {
           filename: file.basename,
           content: file.contents
@@ -52,7 +52,7 @@ function runtargetMime(callback: any) {
     .on('data', function (file:Vinyl) {
       log.info('Starting processing on ' + file.basename)
     })    
-    .pipe(targetMime({Attachments}))
+    .pipe(targetMime({attachments}))
     .pipe(gulp.dest('../testdata/processed'))
     .on('data', function (file:Vinyl) {
       log.info('Finished processing on ' + file.basename)

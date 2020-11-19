@@ -1,0 +1,6 @@
+{
+    "from": "test@test.com",
+    "to": "me@gmail.com",
+    "subject": "This is a test!",
+    "text": "nothing really to say..."
+}
