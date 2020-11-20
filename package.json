@@ -1,6 +1,6 @@
 {
   "name": "gulp-target-mime",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "repository": "https://github.com/gulpetl/gulp-target-mime",
   "description": "Take files from a gulp pipeline and convert to a MIME file for emailing",
   "main": "dist/js/plugin.js",
