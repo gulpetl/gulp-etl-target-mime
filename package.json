@@ -9,8 +9,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && tsc --module commonjs --outDir dist/lib",
-    "test": "jest"
+    "build": "tsc",
+    "prebuild": "npm run clean",
+    "clean": "rimraf dist/*",
+    "test": "jest",
+    "bump": "npm version patch && git push --tags origin master"
   },
   "author": "peterl@sbcotton.com",
   "license": "MIT",
@@ -21,7 +24,6 @@
   ],
   "homepage": "https://gulpetl.com",
   "dependencies": {
-    "@types/replace-ext": "0.0.27",
     "get-stream": "^5.2.0",
     "gulp-error-handle": "^1.0.1",
     "loglevel": "^1.7.0",
@@ -40,6 +42,7 @@
     "@types/loglevel": "^1.6.3",
     "@types/node": "^10.17.45",
     "@types/nodemailer": "^6.4.0",
+    "@types/replace-ext": "0.0.27",
     "@types/vinyl": "^2.0.4",
     "@types/vinyl-paths": "0.0.31",
     "from2": "^2.3.0",
