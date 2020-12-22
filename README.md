@@ -102,8 +102,8 @@ exports.default = gulp.series(collectAttachments, createAndSendEmails)
 
 ## gulp-data compatibility
 
-`configObj` can be omitted in favor of the API suggested by [gulp-data](https://www.npmjs.com/package/gulp-data). Our implementation looks for a `targetMimeConfig`
-property, avoiding interference with other plugins that may look for their own config properties in similar way.
+`configObj` can be omitted in favor of the API suggested by [gulp-data](https://www.npmjs.com/package/gulp-data). Our implementation looks for both a `targetMime`
+property and `gulp-target-mime`, avoiding interference with other plugins that may look for their own config properties in similar way.
 
 ``` javascript
 import { targetMime } from 'gulp-target-mime'
@@ -113,7 +113,7 @@ var data = require('gulp-data');
   return gulp.src('logs/**.log')
     .pipe(data(function(file) {
       return {
-        targetMimeConfig: {
+        targetMime: {
           "from": "logger@test.com",
           "to": "admin@test.com",
           "subject": file.basename,      // this property is specific to the current file, which is not possible when passing configObj to targetMime below
@@ -125,7 +125,7 @@ var data = require('gulp-data');
 // ...
 ```
 
-If there is a conflict, the properties from `configObj` will be overriden, as the `targetMimeConfig` properties are specific to the particular file and thus more granular.
+If there is a conflict, the properties from `configObj` will be overriden, as the `targetMime`/`gulp-target-mime` properties are specific to the particular file and thus more granular.
 
 ## Quick Start for Coding on This Plugin
 

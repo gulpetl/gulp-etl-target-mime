@@ -8,3 +8,4 @@ import mailer from 'nodemailer/lib/mailer';
  * otherwise fully describe the email
  */
 export declare function targetMime(configObj?: mailer.Options, filesAreAttachments?: boolean): any;
+//# sourceMappingURL=plugin.d.ts.map

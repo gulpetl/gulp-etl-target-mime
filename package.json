@@ -24,6 +24,7 @@
   ],
   "homepage": "https://gulpetl.com",
   "dependencies": {
+    "camelcase": "^6.2.0",
     "get-stream": "^5.2.0",
     "gulp-error-handle": "^1.0.1",
     "loglevel": "^1.7.0",

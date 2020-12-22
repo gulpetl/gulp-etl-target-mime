@@ -12,6 +12,7 @@ import mailer from 'nodemailer/lib/mailer';
 const getStream = require('get-stream')
 import replaceExt = require('replace-ext')
 import merge from 'merge'
+import camelcase from 'camelcase';
 
 function addFileAsAttachment (file: Vinyl, config: any): any {
   // file is an attachment; add it to MailObject.attachments
@@ -20,7 +21,8 @@ function addFileAsAttachment (file: Vinyl, config: any): any {
   merge.recursive(mailObject, config)
   mailObject.attachments = mailObject.attachments || []
   mailObject.attachments.push({
-    path: file.path,
+    // path: file.path, // this would load from file on disk (if it hasn't been renamed), not from our current in-memory gulp file
+    filename: file.basename,
     content: file.contents
   })
 
@@ -72,14 +74,18 @@ export function targetMime(configObj?: mailer.Options, filesAreAttachments: bool
     }
 
     // create a config object for this file taking configObj and overriding with any gulp-data-compatible settings from this specific file
-    // we don't use file.data directly; we look for our config object as a property UNDER file.data so other plugins can do the same
-    merge.recursive(config, configObj, file.data?.targetMimeConfig)
-    file.path = replaceExt(file.path, '.eml')
-
-    if (filesAreAttachments)
-      mailObject = addFileAsAttachment(file, config)
-    else
+    // we don't use file.data directly; we look for our config object as a property UNDER file.data (so other plugins can do the same);
+    // tries for both full and shortened-camelcased versions of THIS plugin's name, e.g. "gulp-plugin-name" and "pluginName"
+    merge.recursive(config, configObj, file?.data?.[PLUGIN_NAME], file.data?.[camelcase(PLUGIN_NAME.replace(/^gulp-/, ''))])
+    
+    if (filesAreAttachments) {
+      mailObject = addFileAsAttachment(file, config) // uses current file.basename as the name of the attachment
+      file.path = file.path + '.eml' // rename current file (which is becoming a mime file rather than an attachment), e.g. asdf.pdf -> asdf.pdf.eml
+    }
+    else {
       mailObject = await mergeFileAsMailObject(file, config)
+      file.path = replaceExt(file.path, '.eml') // e.g. one-email.json -> one-email.eml
+    }
 
     let mail = new MailComposer(mailObject)
 

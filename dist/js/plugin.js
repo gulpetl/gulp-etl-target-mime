@@ -21,13 +21,15 @@ const MailComposer = require('nodemailer/lib/mail-composer');
 const getStream = require('get-stream');
 const replaceExt = require("replace-ext");
 const merge_1 = require("merge");
+const camelcase_1 = require("camelcase");
 function addFileAsAttachment(file, config) {
     // file is an attachment; add it to MailObject.attachments
     let mailObject = {};
     merge_1.default.recursive(mailObject, config);
     mailObject.attachments = mailObject.attachments || [];
     mailObject.attachments.push({
-        path: file.path,
+        // path: file.path, // this would load from file on disk (if it hasn't been renamed), not from our current in-memory gulp file
+        filename: file.basename,
         content: file.contents
     });
     return mailObject;
@@ -62,7 +64,7 @@ function targetMime(configObj, filesAreAttachments = false) {
     // creating a stream through which each file will pass - a new instance will be created and invoked for each file 
     // see https://stackoverflow.com/a/52432089/5578474 for a note on the "this" param
     const strm = through2.obj(function (file, encoding, cb) {
-        var _a;
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             let mailObject = {};
             let config = {};
@@ -72,13 +74,17 @@ function targetMime(configObj, filesAreAttachments = false) {
                 return cb(returnErr);
             }
             // create a config object for this file taking configObj and overriding with any gulp-data-compatible settings from this specific file
-            // we don't use file.data directly; we look for our config object as a property UNDER file.data so other plugins can do the same
-            merge_1.default.recursive(config, configObj, (_a = file.data) === null || _a === void 0 ? void 0 : _a.targetMimeConfig);
-            file.path = replaceExt(file.path, '.eml');
-            if (filesAreAttachments)
-                mailObject = addFileAsAttachment(file, config);
-            else
+            // we don't use file.data directly; we look for our config object as a property UNDER file.data (so other plugins can do the same);
+            // tries for both full and shortened-camelcased versions of THIS plugin's name, e.g. "gulp-plugin-name" and "pluginName"
+            merge_1.default.recursive(config, configObj, (_a = file === null || file === void 0 ? void 0 : file.data) === null || _a === void 0 ? void 0 : _a[PLUGIN_NAME], (_b = file.data) === null || _b === void 0 ? void 0 : _b[camelcase_1.default(PLUGIN_NAME.replace(/^gulp-/, ''))]);
+            if (filesAreAttachments) {
+                mailObject = addFileAsAttachment(file, config); // uses current file.basename as the name of the attachment
+                file.path = file.path + '.eml'; // rename current file (which is becoming a mime file rather than an attachment), e.g. asdf.pdf -> asdf.pdf.eml
+            }
+            else {
                 mailObject = yield mergeFileAsMailObject(file, config);
+                file.path = replaceExt(file.path, '.eml'); // e.g. one-email.json -> one-email.eml
+            }
             let mail = new MailComposer(mailObject);
             try {
                 if (file.isBuffer()) {
